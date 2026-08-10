@@ -442,33 +442,35 @@ function handleTypingInput() {
   const word = currentWordList[wordIndex];
   const romaji = word.romaji;
 
-  // 入力欄に打たれた最後の1文字を取り出す
+  // 入力欄に入った文字をすべて取り出す
+  // (スマホの予測変換などで一度に2文字以上入ることがあるため、
+  //  最後の1文字だけでなく、入った順番にすべてチェックします)
   const typedValue = typingInputEl.value;
-  const typedChar = typedValue[typedValue.length - 1];
 
-  // 入力欄は毎回空っぽに戻す(次の1文字だけを見るため)
+  // 入力欄は毎回空っぽに戻す(次の入力だけを見るため)
   typingInputEl.value = "";
 
-  if (typedChar === undefined) return;
+  for (const typedChar of typedValue) {
+    const expectedChar = romaji[typedLength];
 
-  const expectedChar = romaji[typedLength];
+    if (typedChar.toLowerCase() === expectedChar) {
+      // ------ 正解の場合 ------
+      typedLength++;
+      correctCount++;
+      correctCountEl.textContent = correctCount;
+      renderRomaji(romaji);
 
-  if (typedChar.toLowerCase() === expectedChar) {
-    // ------ 正解の場合 ------
-    typedLength++;
-    correctCount++;
-    correctCountEl.textContent = correctCount;
-    renderRomaji(romaji);
-
-    // 単語をすべて打ち終わったら、次の問題へ
-    if (typedLength >= romaji.length) {
-      goToNextQuestion();
+      // 単語をすべて打ち終わったら、次の問題へ(残りの文字は次の問題のものなので処理しない)
+      if (typedLength >= romaji.length) {
+        goToNextQuestion();
+        return;
+      }
+    } else {
+      // ------ ミスの場合 ------
+      missCount++;
+      missCountEl.textContent = missCount;
+      flashMiss();
     }
-  } else {
-    // ------ ミスの場合 ------
-    missCount++;
-    missCountEl.textContent = missCount;
-    flashMiss();
   }
 }
 
@@ -522,12 +524,12 @@ function endGame() {
   questionCardEl.classList.add("hidden");
   resultCardEl.classList.remove("hidden");
 
-  resultTimeEl.textContent = timerEl.textContent;
   resultCorrectEl.textContent = correctCount;
   resultMissEl.textContent = missCount;
 
   const elapsedSeconds = gameInProgress ? (Date.now() - startTime) / 1000 : 0;
   gameInProgress = false;
+  resultTimeEl.textContent = formatTime(Math.floor(elapsedSeconds));
   const { speed, accuracy } = calculateStats(elapsedSeconds);
   resultSpeedEl.textContent = speed;
   resultAccuracyEl.textContent = accuracy;
@@ -573,12 +575,12 @@ function abortGame() {
   questionCardEl.classList.add("hidden");
   resultCardEl.classList.remove("hidden");
 
-  resultTimeEl.textContent = timerEl.textContent;
   resultCorrectEl.textContent = correctCount;
   resultMissEl.textContent = missCount;
 
   const elapsedSeconds = gameInProgress ? (Date.now() - startTime) / 1000 : 0;
   gameInProgress = false;
+  resultTimeEl.textContent = formatTime(Math.floor(elapsedSeconds));
   const { speed, accuracy } = calculateStats(elapsedSeconds);
   resultSpeedEl.textContent = speed;
   resultAccuracyEl.textContent = accuracy;
@@ -617,14 +619,22 @@ function calculateStats(elapsedSeconds) {
 // ---------------------------------------------------------
 function updateTimerDisplay() {
   const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-  const minutes = Math.floor(elapsedSeconds / 60);
-  const seconds = elapsedSeconds % 60;
+  timerEl.textContent = formatTime(elapsedSeconds);
+}
+
+// ---------------------------------------------------------
+// 秒数を "mm:ss" の形の文字列に変換する処理
+// (プレイ中のタイマー表示と、結果画面のタイム表示の両方で使います)
+// ---------------------------------------------------------
+function formatTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
 
   // 2桁になるように "0" を付け足す(例: 5秒 → 05)
   const mm = String(minutes).padStart(2, "0");
   const ss = String(seconds).padStart(2, "0");
 
-  timerEl.textContent = mm + ":" + ss;
+  return mm + ":" + ss;
 }
 
 
