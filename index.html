@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- スマホでも文字が小さくなりすぎないようにするための設定です -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タイピング練習アプリ</title>
+
+  <!-- 見た目(デザイン)はすべて style.css にまとめています -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>🌸 タイピング練習 🐰</h1>
+
+    <!-- ===================== 成績表示エリア ===================== -->
+    <!-- タイマー・正解数・ミス数・現在の問題番号を表示します -->
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-label">⏱️ タイム</span>
+        <span id="timer" class="status-value">00:00</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">⭕ 正解</span>
+        <span id="correctCount" class="status-value correct">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">❌ ミス</span>
+        <span id="missCount" class="status-value miss">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">📋 問題</span>
+        <span id="progress" class="status-value">0 / 0</span>
+      </div>
+    </div>
+
+    <!-- ===================== 難易度選択エリア ===================== -->
+    <!-- 「初級」「中級」「上級」から出題する問題の難易度を選べます -->
+    <div class="difficulty-select" id="difficultySelect">
+      <span class="difficulty-label">難易度</span>
+      <label class="difficulty-option">
+        <input type="radio" name="difficulty" value="home" checked>
+        <span>🏠 ホームポジション</span>
+      </label>
+      <label class="difficulty-option">
+        <input type="radio" name="difficulty" value="beginner">
+        <span>🌱 初級</span>
+      </label>
+      <label class="difficulty-option">
+        <input type="radio" name="difficulty" value="intermediate">
+        <span>🌿 中級</span>
+      </label>
+      <label class="difficulty-option">
+        <input type="radio" name="difficulty" value="advanced">
+        <span>🔥 上級</span>
+      </label>
+    </div>
+
+    <!-- ===================== 手のイラストエリア ===================== -->
+    <!-- 今どの指で打てばいいかを、手のイラストの色で教えてくれるコーナーです -->
+    <!-- 光っている指が「今から動かす指」です。指ごとに data-finger 属性で -->
+    <!-- 区別していて、script.js 側でその色を切り替えています -->
+    <div class="hand-guide-card" id="handGuideCard">
+      <svg class="hand-guide-svg" viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="手のイラスト。光っている指が次に打つ指です">
+
+        <!-- ---------- ひだり手 ---------- -->
+        <!-- 指は「手のひらの上に、まっすぐ生えている」形にすることで、 -->
+        <!-- すきま無くつながって見えるようにしています(付け根がぴったり同じ高さ) -->
+        <g class="hand hand-left">
+          <rect class="palm" x="39" y="90" width="130" height="70" rx="28" />
+          <rect class="finger" data-finger="left-pinky"  x="65"  y="48" width="18" height="42" rx="9" />
+          <rect class="finger" data-finger="left-ring"   x="89"  y="34" width="18" height="56" rx="9" />
+          <rect class="finger" data-finger="left-middle" x="113" y="28" width="18" height="62" rx="9" />
+          <rect class="finger" data-finger="left-index"  x="137" y="38" width="18" height="52" rx="9" />
+          <rect class="finger" data-finger="left-thumb"  x="-10" y="-46" width="20" height="46" rx="10" transform="translate(163,150) rotate(45)" />
+          <circle class="home-key-dot" cx="146" cy="42" r="3.5" />
+        </g>
+
+        <!-- ---------- みぎ手 ---------- -->
+        <g class="hand hand-right">
+          <rect class="palm" x="190" y="90" width="130" height="70" rx="28" />
+          <rect class="finger" data-finger="right-index"  x="204" y="38" width="18" height="52" rx="9" />
+          <rect class="finger" data-finger="right-middle" x="228" y="28" width="18" height="62" rx="9" />
+          <rect class="finger" data-finger="right-ring"   x="252" y="34" width="18" height="56" rx="9" />
+          <rect class="finger" data-finger="right-pinky"  x="276" y="48" width="18" height="42" rx="9" />
+          <rect class="finger" data-finger="right-thumb"  x="-10" y="-46" width="20" height="46" rx="10" transform="translate(196,150) rotate(-45)" />
+          <circle class="home-key-dot" cx="213" cy="42" r="3.5" />
+        </g>
+      </svg>
+
+      <p class="hand-guide-caption" id="handGuideCaption">👉 スタートを押すと、ここで指をおしえてくれるよ</p>
+    </div>
+
+    <!-- ===================== キーボード配列エリア ===================== -->
+    <!-- 実際のキーボードと同じ並びでキーを表示し、次に打つキーを光らせます -->
+    <!-- F と J には、家庭用キーボードにもある「でっぱり(ホームポジションの目印)」を -->
+    <!-- key-home クラスで再現しています -->
+    <div class="keyboard-guide-card" id="keyboardGuideCard">
+      <div class="keyboard-rows">
+        <div class="keyboard-row keyboard-row--1">
+          <div class="key" data-key="q">Q</div>
+          <div class="key" data-key="w">W</div>
+          <div class="key" data-key="e">E</div>
+          <div class="key" data-key="r">R</div>
+          <div class="key" data-key="t">T</div>
+          <div class="key" data-key="y">Y</div>
+          <div class="key" data-key="u">U</div>
+          <div class="key" data-key="i">I</div>
+          <div class="key" data-key="o">O</div>
+          <div class="key" data-key="p">P</div>
+        </div>
+        <div class="keyboard-row keyboard-row--2">
+          <div class="key" data-key="a">A</div>
+          <div class="key" data-key="s">S</div>
+          <div class="key" data-key="d">D</div>
+          <div class="key key-home" data-key="f">F</div>
+          <div class="key" data-key="g">G</div>
+          <div class="key" data-key="h">H</div>
+          <div class="key key-home" data-key="j">J</div>
+          <div class="key" data-key="k">K</div>
+          <div class="key" data-key="l">L</div>
+        </div>
+        <div class="keyboard-row keyboard-row--3">
+          <div class="key" data-key="z">Z</div>
+          <div class="key" data-key="x">X</div>
+          <div class="key" data-key="c">C</div>
+          <div class="key" data-key="v">V</div>
+          <div class="key" data-key="b">B</div>
+          <div class="key" data-key="n">N</div>
+          <div class="key" data-key="m">M</div>
+        </div>
+        <div class="keyboard-row keyboard-row--4">
+          <div class="key key-space" data-key=" ">SPACE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 問題表示エリア ===================== -->
+    <div class="question-card" id="questionCard">
+
+      <!-- カウントダウン中(3→2→1)にお題の上へかぶせて表示する画面 -->
+      <div class="countdown-overlay hidden" id="countdownOverlay">
+        <span id="countdownNumber">3</span>
+      </div>
+
+      <!-- お題(日本語)を表示する場所 -->
+      <p class="question-japanese" id="questionJapanese">スタートボタンを押してね</p>
+
+      <!-- 入力するローマ字を1文字ずつ表示する場所 -->
+      <!-- 打った文字は緑色、まだの文字は灰色になります -->
+      <p class="question-romaji" id="questionRomaji"></p>
+
+      <!-- 実際に文字を入力するための入力欄です -->
+      <!-- スマホでもキーボードが出るように <input> を使っています -->
+      <input
+        type="text"
+        id="typingInput"
+        class="typing-input"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="text"
+        placeholder="ここにローマ字を入力"
+        disabled
+      >
+    </div>
+
+    <!-- ===================== 結果表示エリア(最後に表示) ===================== -->
+    <div class="result-card hidden" id="resultCard">
+      <h2>🎉 結果発表! 🎉</h2>
+      <p>⏱️ タイム: <span id="resultTime">00:00</span></p>
+      <p>⭕ 正解数: <span id="resultCorrect">0</span></p>
+      <p>❌ ミス数: <span id="resultMiss">0</span></p>
+      <p>🚀 速度: <span id="resultSpeed">0</span> 文字/分</p>
+      <p>🎯 正確率: <span id="resultAccuracy">0</span> %</p>
+    </div>
+
+    <!-- ===================== ボタンエリア ===================== -->
+    <div class="button-area">
+      <button id="startButton" class="btn btn-start">🚀 スタート</button>
+      <button id="retryButton" class="btn btn-retry hidden">🔁 もう一度</button>
+      <!-- プレイ中(カウントダウン中も含む)だけ表示する中断ボタン -->
+      <button id="stopButton" class="btn btn-stop hidden">⏸️ 中断</button>
+    </div>
+
+  </div>
+
+  <!-- 問題データ(初級・中級・上級)は questions.js にまとめています -->
+  <script src="questions.js"></script>
+  <!-- 動作(ロジック)はすべて script.js にまとめています -->
+  <script src="script.js"></script>
+</body>
+</html>

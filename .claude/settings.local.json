@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start *)",
+      "Bash(node *)",
+      "Bash(node \"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-user-Desktop---------\\\\a59645c2-d7d7-4403-8436-e62e70fcc640\\\\scratchpad\\\\static_server.js\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8934/index.html)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill *)",
+      "Bash(nohup npx --yes http-server -p 8791 -c-1)",
+      "Bash(disown)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8791/index.html)",
+      "Read(//tmp/**)",
+      "Bash(pkill -f \"http-server\")",
+      "Bash(nohup npx --yes http-server -p 8792 -c-1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8792/index.html)"
+    ]
+  }
+}
